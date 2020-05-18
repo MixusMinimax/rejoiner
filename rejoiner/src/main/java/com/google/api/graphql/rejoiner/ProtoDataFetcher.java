@@ -56,9 +56,8 @@ final class ProtoDataFetcher implements DataFetcher<Object> {
       if (type instanceof GraphQLEnumType) {
         return ((Message) source).getField(fieldDescriptor).toString();
       }
-      if(fieldDescriptor.isRepeated() || ((Message) source).hasField(fieldDescriptor)){
+      if(fieldDescriptor.isRepeated() || fieldDescriptor.getType() != Descriptors.FieldDescriptor.Type.MESSAGE || ((Message) source).hasField(fieldDescriptor)){
         return ((Message) source).getField(fieldDescriptor);
-
       } else {
         return null;
       }
