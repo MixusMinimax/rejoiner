@@ -84,10 +84,16 @@ public final class GqlInputConverter {
         @SuppressWarnings("unchecked")
         List<Object> values = (List<Object>) remainingInput.remove(fieldName);
         for (Object value : values) {
-          builder.addRepeatedField(field, getValueForField(field, value, builder));
+          Object valueForField = getValueForField(field, value, builder);
+          if(valueForField!=null){
+            builder.addRepeatedField(field, valueForField);
+          }
         }
       } else {
-        builder.setField(field, getValueForField(field, remainingInput.remove(fieldName), builder));
+        Object valueForField = getValueForField(field, remainingInput.remove(fieldName), builder);
+        if(valueForField!=null){
+          builder.setField(field, valueForField);
+        }
       }
     }
 
@@ -126,6 +132,16 @@ public final class GqlInputConverter {
 
   private Object getValueForField(FieldDescriptor field, Object value, Message.Builder builder) {
     // TODO: handle groups, oneof
+    if(field.getType() == FieldDescriptor.Type.MESSAGE && ProtoToGql.TYPE_MAP_WRAPPERS.containsKey(ProtoToGql.getReferenceName(field.getMessageType()))){
+      Descriptor fieldTypeDescriptor =
+              descriptorMapping.get(getReferenceName(field.getMessageType()));
+      if(value == null){
+        return null;
+      }else{
+        return builder.newBuilderForField(field).setField(fieldTypeDescriptor.findFieldByName("value"),value).build();
+      }
+    }
+
     if (field.getType() == FieldDescriptor.Type.MESSAGE) {
       Descriptor fieldTypeDescriptor =
           descriptorMapping.get(getReferenceName(field.getMessageType()));
@@ -172,6 +188,9 @@ public final class GqlInputConverter {
   private static GraphQLType getFieldType(FieldDescriptor field, SchemaOptions schemaOptions) {
     if (field.getType() == FieldDescriptor.Type.MESSAGE
         || field.getType() == FieldDescriptor.Type.GROUP) {
+      if(field.getType() == FieldDescriptor.Type.MESSAGE && ProtoToGql.TYPE_MAP_WRAPPERS.containsKey(ProtoToGql.getReferenceName(field.getMessageType()))){
+        return ProtoToGql.TYPE_MAP_WRAPPERS.get(ProtoToGql.getReferenceName(field.getMessageType()));
+      }
       return new GraphQLTypeReference(getReferenceName(field.getMessageType()));
     }
     if (field.getType() == FieldDescriptor.Type.ENUM) {

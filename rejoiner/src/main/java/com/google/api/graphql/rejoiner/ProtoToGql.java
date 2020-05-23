@@ -14,6 +14,8 @@
 
 package com.google.api.graphql.rejoiner;
 
+
+import com.google.api.graphql.wrappertypes.WrapperDataFetcher;
 import com.google.common.base.CharMatcher;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -23,6 +25,7 @@ import com.google.protobuf.Descriptors.EnumValueDescriptor;
 import com.google.protobuf.Descriptors.FieldDescriptor;
 import com.google.protobuf.Descriptors.FieldDescriptor.Type;
 import com.google.protobuf.Descriptors.GenericDescriptor;
+import com.google.protobuf.Message;
 import graphql.Scalars;
 import graphql.schema.DataFetcher;
 import graphql.schema.GraphQLEnumType;
@@ -80,13 +83,26 @@ final class ProtoToGql {
           .put(Type.SFIXED32, Scalars.GraphQLInt)
           .put(Type.SFIXED64, Scalars.GraphQLLong)
           .build();
+  public static final ImmutableMap<String, GraphQLScalarType> TYPE_MAP_WRAPPERS =
+          new ImmutableMap.Builder<String, GraphQLScalarType>()
+                  .put("BoolW", Scalars.GraphQLBoolean)
+                  .put("DoubleW", Scalars.GraphQLFloat)
+                  .put("Int32W", Scalars.GraphQLInt)
+                  .build();
+
 
   private static final ImmutableList<GraphQLFieldDefinition> STATIC_FIELD =
       ImmutableList.of(newFieldDefinition().type(GraphQLString).name("_").staticValue("-").build());
 
   private static GraphQLFieldDefinition convertField(
       FieldDescriptor fieldDescriptor, SchemaOptions schemaOptions) {
-    DataFetcher<?> dataFetcher = new ProtoDataFetcher(fieldDescriptor);
+    DataFetcher<?> dataFetcher;
+    if (fieldDescriptor.getType() == Type.MESSAGE && TYPE_MAP_WRAPPERS.containsKey(getReferenceName(fieldDescriptor.getMessageType()))){
+      dataFetcher = new WrapperDataFetcher(fieldDescriptor);
+    }else {
+      dataFetcher = new ProtoDataFetcher(fieldDescriptor);
+
+    }
     GraphQLFieldDefinition.Builder builder =
         newFieldDefinition()
             .type(convertType(fieldDescriptor, schemaOptions))
@@ -105,7 +121,10 @@ final class ProtoToGql {
       FieldDescriptor fieldDescriptor, SchemaOptions schemaOptions) {
     final GraphQLOutputType type;
 
-    if (fieldDescriptor.getType() == Type.MESSAGE) {
+    if (fieldDescriptor.getType() == Type.MESSAGE && TYPE_MAP_WRAPPERS.containsKey(getReferenceName(fieldDescriptor.getMessageType()))){
+      type = TYPE_MAP_WRAPPERS.get(getReferenceName(fieldDescriptor.getMessageType()));
+    }
+    else if (fieldDescriptor.getType() == Type.MESSAGE) {
       type = getReference(fieldDescriptor.getMessageType());
     } else if (fieldDescriptor.getType() == Type.GROUP) {
       type = getReference(fieldDescriptor.getMessageType());

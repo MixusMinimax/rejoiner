@@ -170,7 +170,9 @@ final class ProtoRegistry {
           mapping.put(
               GqlInputConverter.getReferenceName(descriptor),
               inputConverter.getInputType(descriptor, schemaOptions));
-          loop.addAll(descriptor.getNestedTypes());
+          if(!ProtoToGql.TYPE_MAP_WRAPPERS.containsKey(ProtoToGql.getReferenceName(descriptor))){
+            loop.addAll(descriptor.getNestedTypes());
+          }
 
           mapping.putAll(getEnumMap(descriptor.getEnumTypes(), schemaOptions));
         }
