@@ -24,7 +24,10 @@ import graphql.schema.GraphQLEnumType;
 import graphql.schema.GraphQLType;
 
 import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 final class ProtoDataFetcher implements DataFetcher<Object> {
   private static final Converter<String, String> UNDERSCORE_TO_CAMEL =
@@ -56,6 +59,11 @@ final class ProtoDataFetcher implements DataFetcher<Object> {
       if (type instanceof GraphQLEnumType) {
         return ((Message) source).getField(fieldDescriptor).toString();
       }
+      if(fieldDescriptor.isRepeated() && fieldDescriptor.getType() == Descriptors.FieldDescriptor.Type.ENUM ){
+        List<Descriptors.EnumValueDescriptor> enumDescriptorList =  (List< Descriptors.EnumValueDescriptor >) ((Message) source).getField(fieldDescriptor);
+        return enumDescriptorList.stream().map(Descriptors.EnumValueDescriptor::toString).collect(Collectors.toList());
+      }
+
       if(fieldDescriptor.isRepeated() || fieldDescriptor.getType() != Descriptors.FieldDescriptor.Type.MESSAGE || ((Message) source).hasField(fieldDescriptor)){
         return ((Message) source).getField(fieldDescriptor);
       } else {
