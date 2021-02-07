@@ -17,7 +17,6 @@ package com.google.api.graphql.grpc;
 import com.google.common.base.CaseFormat;
 import com.google.common.base.Converter;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.protobuf.Descriptors.Descriptor;
 import com.google.protobuf.FieldMask;
@@ -28,100 +27,127 @@ import graphql.language.FragmentDefinition;
 import graphql.language.FragmentSpread;
 import graphql.language.Selection;
 import graphql.schema.DataFetchingEnvironment;
+
 import java.util.Map;
 import java.util.Optional;
 
-/** Creates a {@link FieldMask} based on a GraphQL {@link Selection}. */
+/**
+ * Creates a {@link FieldMask} based on a GraphQL {@link Selection}.
+ */
 public final class SelectorToFieldMask {
 
-  private SelectorToFieldMask() {}
+    private SelectorToFieldMask() {
+    }
 
-  private static final Converter<String, String> FIELD_TO_PROTO =
-      CaseFormat.LOWER_CAMEL.converterTo(CaseFormat.LOWER_UNDERSCORE);
+    private static final Converter<String, String> FIELD_TO_PROTO =
+            CaseFormat.LOWER_CAMEL.converterTo(CaseFormat.LOWER_UNDERSCORE);
 
-  public static Builder getFieldMaskForProto(
-      DataFetchingEnvironment environment, Descriptor descriptor, String startAtFieldName) {
+    public static Builder getFieldMaskForProto(
+            DataFetchingEnvironment environment, Descriptor descriptor, String startAtFieldName) {
+        return getFieldMaskForProto(environment, descriptor, startAtFieldName, false);
+    }
 
-    Map<String, FragmentDefinition> fragmentsByName = environment.getFragmentsByName();
+    public static Builder getFieldMaskForProto(
+            DataFetchingEnvironment environment, Descriptor descriptor, String startAtFieldName, boolean ignoreNotFound) {
 
-    Builder maskFromSelectionBuilder = FieldMask.newBuilder();
+        Map<String, FragmentDefinition> fragmentsByName = environment.getFragmentsByName();
 
-    for (Field field : environment.getFields()) {
-      for (Selection<?> selection1 : field.getSelectionSet().getSelections()) {
-        if (selection1 instanceof Field) {
-          Field field2 = (Field) selection1;
-          if (field2.getName().equals(startAtFieldName)) {
-            for (Selection<?> selection : field2.getSelectionSet().getSelections()) {
-              maskFromSelectionBuilder.addAllPaths(
-                  getPathsForProto("", selection, descriptor, fragmentsByName));
+        Builder maskFromSelectionBuilder = FieldMask.newBuilder();
+
+        for (Field field : environment.getFields()) {
+            for (Selection<?> selection1 : field.getSelectionSet().getSelections()) {
+                if (selection1 instanceof Field) {
+                    Field field2 = (Field) selection1;
+                    if (field2.getName().equals(startAtFieldName)) {
+                        for (Selection<?> selection : field2.getSelectionSet().getSelections()) {
+                            maskFromSelectionBuilder.addAllPaths(
+                                    getPathsForProto("", selection, descriptor, fragmentsByName, ignoreNotFound));
+                        }
+                    }
+                }
             }
-          }
         }
-      }
+        return maskFromSelectionBuilder;
     }
-    return maskFromSelectionBuilder;
-  }
 
-  public static Builder getFieldMaskForProto(
-      DataFetchingEnvironment environment, Descriptor descriptor) {
-
-    Map<String, FragmentDefinition> fragmentsByName = environment.getFragmentsByName();
-
-    Builder maskFromSelectionBuilder = FieldMask.newBuilder();
-    for (Field field :
-        Optional.ofNullable(environment.getMergedField())
-            .map(MergedField::getFields)
-            .orElse(ImmutableList.of())) {
-      for (Selection<?> selection : field.getSelectionSet().getSelections()) {
-        maskFromSelectionBuilder.addAllPaths(
-            getPathsForProto("", selection, descriptor, fragmentsByName));
-      }
+    public static Builder getFieldMaskForProto(
+            DataFetchingEnvironment environment, Descriptor descriptor) {
+        return getFieldMaskForProto(environment, descriptor, false);
     }
-    return maskFromSelectionBuilder;
-  }
+
+
+    public static Builder getFieldMaskForProto(
+            DataFetchingEnvironment environment, Descriptor descriptor, boolean ignoreNotFound) {
+
+        Map<String, FragmentDefinition> fragmentsByName = environment.getFragmentsByName();
+
+        Builder maskFromSelectionBuilder = FieldMask.newBuilder();
+        for (Field field :
+                Optional.ofNullable(environment.getMergedField())
+                        .map(MergedField::getFields)
+                        .orElse(ImmutableList.of())) {
+            for (Selection<?> selection : field.getSelectionSet().getSelections()) {
+                maskFromSelectionBuilder.addAllPaths(
+                        getPathsForProto("", selection, descriptor, fragmentsByName, ignoreNotFound));
+            }
+        }
+        return maskFromSelectionBuilder;
+    }
 
   private static ImmutableSet<String> getPathsForProto(
-      String prefix,
-      Selection<?> node,
-      Descriptor descriptor,
-      Map<String, FragmentDefinition> fragmentsByName) {
-    ImmutableSet.Builder<String> builder = ImmutableSet.builder();
-    if (node instanceof Field) {
-      Field field = ((Field) node);
-      String name = FIELD_TO_PROTO.convert(field.getName());
-      if (descriptor.findFieldByName(name) == null) {
-        if (!prefix.isEmpty()) {
-          builder.add(prefix + "*");
+          String prefix,
+          Selection<?> node,
+          Descriptor descriptor,
+          Map<String, FragmentDefinition> fragmentsByName) {
+      return getPathsForProto(prefix, node, descriptor, fragmentsByName);
+
+  }
+    private static ImmutableSet<String> getPathsForProto(
+            String prefix,
+            Selection<?> node,
+            Descriptor descriptor,
+            Map<String, FragmentDefinition> fragmentsByName, boolean ignoreNotFound) {
+        ImmutableSet.Builder<String> builder = ImmutableSet.builder();
+        if (node instanceof Field) {
+            Field field = ((Field) node);
+            String name = FIELD_TO_PROTO.convert(field.getName());
+            if (descriptor.findFieldByName(name) == null) {
+                if (!prefix.isEmpty()) {
+                  if(!ignoreNotFound){
+                    builder.add(prefix + "*");
+                  }else {
+                    builder.add(prefix + name);
+                  }
+                }
+                return builder.build();
+            }
+
+            if (field.getSelectionSet() != null) {
+                for (Selection<?> selection : field.getSelectionSet().getSelections()) {
+                    builder.addAll(
+                            getPathsForProto(
+                                    prefix + name + ".",
+                                    selection,
+                                    descriptor.findFieldByName(name).getMessageType(),
+                                    fragmentsByName, ignoreNotFound));
+                }
+            } else {
+                builder.add(prefix + name);
+            }
+        } else if (node instanceof FragmentSpread) {
+            FragmentSpread fragmentSpread = (FragmentSpread) node;
+            String name = fragmentSpread.getName();
+            FragmentDefinition field = fragmentsByName.get(fragmentSpread.getName());
+            if (field.getSelectionSet() != null) {
+                for (Selection<?> selection : field.getSelectionSet().getSelections()) {
+                    builder.addAll(getPathsForProto(prefix, selection, descriptor, fragmentsByName, ignoreNotFound));
+                }
+            } else {
+                builder.add(prefix + name);
+            }
+        } else {
+            // "not a Field"
         }
         return builder.build();
-      }
-
-      if (field.getSelectionSet() != null) {
-        for (Selection<?> selection : field.getSelectionSet().getSelections()) {
-          builder.addAll(
-              getPathsForProto(
-                  prefix + name + ".",
-                  selection,
-                  descriptor.findFieldByName(name).getMessageType(),
-                  fragmentsByName));
-        }
-      } else {
-        builder.add(prefix + name);
-      }
-    } else if (node instanceof FragmentSpread) {
-      FragmentSpread fragmentSpread = (FragmentSpread) node;
-      String name = fragmentSpread.getName();
-      FragmentDefinition field = fragmentsByName.get(fragmentSpread.getName());
-      if (field.getSelectionSet() != null) {
-        for (Selection<?> selection : field.getSelectionSet().getSelections()) {
-          builder.addAll(getPathsForProto(prefix, selection, descriptor, fragmentsByName));
-        }
-      } else {
-        builder.add(prefix + name);
-      }
-    } else {
-      // "not a Field"
     }
-    return builder.build();
-  }
 }
