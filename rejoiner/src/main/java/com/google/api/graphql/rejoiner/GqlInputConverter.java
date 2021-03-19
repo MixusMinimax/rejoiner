@@ -143,6 +143,9 @@ public final class GqlInputConverter {
     }
 
     if (field.getType() == FieldDescriptor.Type.MESSAGE) {
+      if(value == null){
+        return null;
+      }
       Descriptor fieldTypeDescriptor =
           descriptorMapping.get(getReferenceName(field.getMessageType()));
       return createProtoBuf(

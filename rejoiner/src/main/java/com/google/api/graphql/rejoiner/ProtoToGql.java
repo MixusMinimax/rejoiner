@@ -88,6 +88,7 @@ final class ProtoToGql {
                   .put("BoolW", Scalars.GraphQLBoolean)
                   .put("DoubleW", Scalars.GraphQLFloat)
                   .put("Int32W", Scalars.GraphQLInt)
+                  .put("Int64W", Scalars.GraphQLLong)
                   .build();
 
 

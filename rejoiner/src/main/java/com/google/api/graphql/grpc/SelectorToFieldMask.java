@@ -99,7 +99,7 @@ public final class SelectorToFieldMask {
           Selection<?> node,
           Descriptor descriptor,
           Map<String, FragmentDefinition> fragmentsByName) {
-      return getPathsForProto(prefix, node, descriptor, fragmentsByName);
+      return getPathsForProto(prefix, node, descriptor, fragmentsByName, false);
 
   }
     private static ImmutableSet<String> getPathsForProto(
