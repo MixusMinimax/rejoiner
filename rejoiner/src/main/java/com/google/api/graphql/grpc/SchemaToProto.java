@@ -17,6 +17,7 @@ package com.google.api.graphql.grpc;
 import com.google.common.base.Joiner;
 import com.google.common.collect.ImmutableMap;
 import graphql.Scalars;
+import graphql.scalars.java.JavaPrimitives;
 import graphql.schema.GraphQLEnumType;
 import graphql.schema.GraphQLEnumValueDefinition;
 import graphql.schema.GraphQLFieldDefinition;
@@ -47,7 +48,7 @@ public final class SchemaToProto {
           .put(Scalars.GraphQLBoolean.getName(), "bool")
           .put(Scalars.GraphQLFloat.getName(), "float")
           .put(Scalars.GraphQLInt.getName(), "int32")
-          .put(Scalars.GraphQLLong.getName(), "int64")
+          .put(JavaPrimitives.GraphQLLong.getName(), "int64")
           .put(Scalars.GraphQLString.getName(), "string")
           .build();
 

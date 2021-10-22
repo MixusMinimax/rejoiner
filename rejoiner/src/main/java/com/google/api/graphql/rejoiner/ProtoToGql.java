@@ -27,6 +27,7 @@ import com.google.protobuf.Descriptors.FieldDescriptor.Type;
 import com.google.protobuf.Descriptors.GenericDescriptor;
 import com.google.protobuf.Message;
 import graphql.Scalars;
+import graphql.scalars.java.JavaPrimitives;
 import graphql.schema.DataFetcher;
 import graphql.schema.GraphQLEnumType;
 import graphql.schema.GraphQLFieldDefinition;
@@ -51,7 +52,7 @@ final class ProtoToGql {
           .put(Type.BOOL, Scalars.GraphQLBoolean)
           .put(Type.FLOAT, Scalars.GraphQLFloat)
           .put(Type.INT32, Scalars.GraphQLInt)
-          .put(Type.INT64, Scalars.GraphQLLong)
+          .put(Type.INT64, JavaPrimitives.GraphQLLong)
           .put(Type.STRING, Scalars.GraphQLString)
           .put(Type.DOUBLE, Scalars.GraphQLFloat)
           .put(Type.UINT32, ProtoScalars.UINT_32)
@@ -70,25 +71,25 @@ final class ProtoToGql {
           .put(Type.BOOL, Scalars.GraphQLBoolean)
           .put(Type.FLOAT, Scalars.GraphQLFloat)
           .put(Type.INT32, Scalars.GraphQLInt)
-          .put(Type.INT64, Scalars.GraphQLLong)
+          .put(Type.INT64, JavaPrimitives.GraphQLLong)
           .put(Type.STRING, Scalars.GraphQLString)
           .put(Type.DOUBLE, Scalars.GraphQLFloat)
           .put(Type.UINT32, Scalars.GraphQLInt)
-          .put(Type.UINT64, Scalars.GraphQLLong)
+          .put(Type.UINT64, JavaPrimitives.GraphQLLong)
           .put(Type.SINT32, Scalars.GraphQLInt)
-          .put(Type.SINT64, Scalars.GraphQLLong)
+          .put(Type.SINT64, JavaPrimitives.GraphQLLong)
           .put(Type.BYTES, Scalars.GraphQLString)
           .put(Type.FIXED32, Scalars.GraphQLInt)
-          .put(Type.FIXED64, Scalars.GraphQLLong)
+          .put(Type.FIXED64, JavaPrimitives.GraphQLLong)
           .put(Type.SFIXED32, Scalars.GraphQLInt)
-          .put(Type.SFIXED64, Scalars.GraphQLLong)
+          .put(Type.SFIXED64, JavaPrimitives.GraphQLLong)
           .build();
   public static final ImmutableMap<String, GraphQLScalarType> TYPE_MAP_WRAPPERS =
           new ImmutableMap.Builder<String, GraphQLScalarType>()
                   .put("BoolW", Scalars.GraphQLBoolean)
                   .put("DoubleW", Scalars.GraphQLFloat)
                   .put("Int32W", Scalars.GraphQLInt)
-                  .put("Int64W", Scalars.GraphQLLong)
+                  .put("Int64W", JavaPrimitives.GraphQLLong)
                   .build();
 
 

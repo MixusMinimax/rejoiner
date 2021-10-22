@@ -29,6 +29,7 @@ import com.google.protobuf.Descriptors.FileDescriptor;
 import com.google.protobuf.Message;
 import com.google.protobuf.ProtocolMessageEnum;
 import graphql.Scalars;
+import graphql.scalars.java.JavaPrimitives;
 import graphql.schema.DataFetcher;
 import graphql.schema.DataFetchingEnvironment;
 import graphql.schema.GraphQLArgument;
@@ -448,7 +449,7 @@ public class SchemaDefinitionReader {
           String.class, Scalars.GraphQLString,
           Integer.class, Scalars.GraphQLInt,
           Boolean.class, Scalars.GraphQLBoolean,
-          Long.class, Scalars.GraphQLLong,
+          Long.class, JavaPrimitives.GraphQLLong,
           Float.class, Scalars.GraphQLFloat);
 
   private GraphQLOutputType getReturnType(Method method)

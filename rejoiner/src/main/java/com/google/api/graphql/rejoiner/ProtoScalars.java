@@ -3,6 +3,7 @@ package com.google.api.graphql.rejoiner;
 import com.google.protobuf.ByteString;
 import graphql.Scalars;
 import graphql.language.StringValue;
+import graphql.scalars.java.JavaPrimitives;
 import graphql.schema.Coercing;
 import graphql.schema.CoercingParseLiteralException;
 import graphql.schema.CoercingParseValueException;
@@ -29,7 +30,7 @@ public final class ProtoScalars {
           .build();
 
   public static final GraphQLScalarType UINT_64 =
-      GraphQLScalarType.newScalar(Scalars.GraphQLLong)
+      GraphQLScalarType.newScalar(JavaPrimitives.GraphQLLong)
           .name("UInt64")
           .description("Scalar for proto type uint64. Uses variable-length encoding.")
           .build();
@@ -43,7 +44,7 @@ public final class ProtoScalars {
           .build();
 
   public static final GraphQLScalarType SINT_64 =
-      GraphQLScalarType.newScalar(Scalars.GraphQLLong)
+      GraphQLScalarType.newScalar(JavaPrimitives.GraphQLLong)
           .name("SInt64")
           .description(
               "Scalar for proto type sint64. Uses variable-length encoding. Signed int value."
@@ -51,7 +52,7 @@ public final class ProtoScalars {
           .build();
 
   public static final GraphQLScalarType FIXED_32 =
-      GraphQLScalarType.newScalar(Scalars.GraphQLLong)
+      GraphQLScalarType.newScalar(JavaPrimitives.GraphQLLong)
           .name("Fixed32")
           .description(
               "Scalar for proto type fixed32. Always four bytes."
@@ -59,7 +60,7 @@ public final class ProtoScalars {
           .build();
 
   public static final GraphQLScalarType FIXED_64 =
-      GraphQLScalarType.newScalar(Scalars.GraphQLLong)
+      GraphQLScalarType.newScalar(JavaPrimitives.GraphQLLong)
           .name("Fixed64")
           .description(
               "Scalar for proto type fixed64. Always eight bytes."
@@ -73,7 +74,7 @@ public final class ProtoScalars {
           .build();
 
   public static final GraphQLScalarType S_FIXED_64 =
-      GraphQLScalarType.newScalar(Scalars.GraphQLLong)
+      GraphQLScalarType.newScalar(JavaPrimitives.GraphQLLong)
           .name("SFixed64")
           .description("Scalar for proto type sfixed64. Always eight bytes.")
           .build();

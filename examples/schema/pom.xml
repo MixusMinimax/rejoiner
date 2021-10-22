@@ -8,11 +8,11 @@
   <parent>
     <groupId>com.google.api.graphql</groupId>
     <artifactId>examples</artifactId>
-    <version>0.4.1-SNAPSHOT</version>
+    <version>0.4.2-SNAPSHOT</version>
   </parent>
 
   <artifactId>example-schema</artifactId>
-  <version>0.4.1-SNAPSHOT</version>
+  <version>0.4.2-SNAPSHOT</version>
   <name>Example - Schema</name>
   <packaging>war</packaging>
 
@@ -20,48 +20,48 @@
     <dependency>
       <groupId>javax.servlet</groupId>
       <artifactId>javax.servlet-api</artifactId>
-      <version>3.0.1</version>
+      <version>4.0.1</version>
     </dependency>
     <dependency>
       <groupId>org.eclipse.jetty</groupId>
       <artifactId>jetty-server</artifactId>
-      <version>9.4.20.v20190813</version>
+      <version>9.4.44.v20210927</version>
     </dependency>
     <dependency>
       <groupId>org.eclipse.jetty</groupId>
       <artifactId>jetty-webapp</artifactId>
-      <version>9.4.20.v20190813</version>
+      <version>9.4.44.v20210927</version>
     </dependency>
     <!-- https://mvnrepository.com/artifact/com.google.inject.extensions/guice-servlet -->
     <dependency>
       <groupId>com.google.inject.extensions</groupId>
       <artifactId>guice-servlet</artifactId>
-      <version>4.2.2</version>
+      <version>5.0.1</version>
     </dependency>
     <dependency>
       <groupId>com.google.api.graphql</groupId>
       <artifactId>schema-common</artifactId>
-      <version>0.4.1-SNAPSHOT</version>
+      <version>0.4.2-SNAPSHOT</version>
     </dependency>
     <dependency>
       <groupId>com.google.api.graphql</groupId>
       <artifactId>schema-cloud-container</artifactId>
-      <version>0.4.1-SNAPSHOT</version>
+      <version>0.4.2-SNAPSHOT</version>
     </dependency>
     <dependency>
       <groupId>com.google.api.graphql</groupId>
       <artifactId>schema-firestore</artifactId>
-      <version>0.4.1-SNAPSHOT</version>
+      <version>0.4.2-SNAPSHOT</version>
     </dependency>
     <dependency>
       <groupId>com.google.api.graphql</groupId>
       <artifactId>rejoiner-grpc</artifactId>
-      <version>0.4.1-SNAPSHOT</version>
+      <version>0.4.2-SNAPSHOT</version>
     </dependency>
     <dependency>
       <groupId>com.google.api.graphql</groupId>
       <artifactId>rejoiner-guice</artifactId>
-      <version>0.4.1-SNAPSHOT</version>
+      <version>0.4.2-SNAPSHOT</version>
     </dependency>
     <dependency>
       <groupId>io.grpc</groupId>
@@ -84,7 +84,17 @@
       <plugin>
         <groupId>org.eclipse.jetty</groupId>
         <artifactId>jetty-maven-plugin</artifactId>
-        <version>9.4.20.v20190813</version>
+        <version>9.4.44.v20210927</version>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-war-plugin</artifactId>
+        <version>3.3.1</version>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <version>3.8.1</version>
       </plugin>
     </plugins>
   </build>

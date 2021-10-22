@@ -6,10 +6,10 @@
   <parent>
     <groupId>com.google.api.graphql</groupId>
     <artifactId>rejoiner-parent</artifactId>
-    <version>0.4.1-SNAPSHOT</version>
+    <version>0.4.2-SNAPSHOT</version>
   </parent>
   <artifactId>examples</artifactId>
-  <version>0.4.1-SNAPSHOT</version>
+  <version>0.4.2-SNAPSHOT</version>
   <name>Example - Parent</name>
   <packaging>pom</packaging>
   <properties>

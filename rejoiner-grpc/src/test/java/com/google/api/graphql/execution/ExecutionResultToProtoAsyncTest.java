@@ -24,7 +24,7 @@ import com.google.common.truth.Truth;
 import com.google.common.truth.extensions.proto.ProtoTruth;
 import graphql.ExceptionWhileDataFetching;
 import graphql.ExecutionResultImpl;
-import graphql.execution.ExecutionPath;
+import graphql.execution.ResultPath;
 import graphql.language.SourceLocation;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
@@ -73,7 +73,7 @@ public final class ExecutionResultToProtoAsyncTest {
 
     ExceptionWhileDataFetching exceptionWhileDataFetching =
         new ExceptionWhileDataFetching(
-            ExecutionPath.rootPath(),
+            ResultPath.rootPath(),
             new RuntimeException("hello world"),
             new SourceLocation(10, 20));
     CompletableFuture<ProtoExecutionResult<Proto1>> executionResultCompletableFuture =
