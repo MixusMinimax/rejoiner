@@ -16,6 +16,9 @@ package com.google.api.graphql.rejoiner;
 
 import com.google.common.base.CaseFormat;
 import com.google.common.base.Converter;
+import com.google.common.util.concurrent.Futures;
+import com.google.common.util.concurrent.ListenableFuture;
+import com.google.common.util.concurrent.MoreExecutors;
 import com.google.protobuf.Descriptors;
 import com.google.protobuf.Message;
 import graphql.schema.DataFetcher;
@@ -41,6 +44,7 @@ final class ProtoDataFetcher implements DataFetcher<Object> {
 
   ProtoDataFetcher(Descriptors.FieldDescriptor fieldDescriptor) {
     this.fieldDescriptor = fieldDescriptor;
+
     final String fieldName = fieldDescriptor.getName();
     convertedFieldName =
         fieldName.contains("_") ? UNDERSCORE_TO_CAMEL.convert(fieldName) : fieldName;
@@ -73,6 +77,8 @@ final class ProtoDataFetcher implements DataFetcher<Object> {
     if (environment.getSource() instanceof Map) {
       return ((Map<?, ?>) source).get(convertedFieldName);
     }
+
+    //Futures.transform((ListenableFuture<Message>) source, msg -> msg.getField(fieldDescriptor), MoreExecutors.directExecutor());
 
     if (method == null) {
       // no synchronization necessary because this line is idempotent

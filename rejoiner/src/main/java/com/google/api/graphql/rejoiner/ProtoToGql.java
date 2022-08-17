@@ -103,7 +103,6 @@ final class ProtoToGql {
       dataFetcher = new WrapperDataFetcher(fieldDescriptor);
     }else {
       dataFetcher = new ProtoDataFetcher(fieldDescriptor);
-
     }
     GraphQLFieldDefinition.Builder builder =
         newFieldDefinition()
