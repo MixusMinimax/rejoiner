@@ -26,68 +26,89 @@ import graphql.schema.DataFetchingEnvironment;
 import graphql.schema.GraphQLEnumType;
 import graphql.schema.GraphQLType;
 
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
 final class ProtoDataFetcher implements DataFetcher<Object> {
-  private static final Converter<String, String> UNDERSCORE_TO_CAMEL =
-      CaseFormat.LOWER_UNDERSCORE.converterTo(CaseFormat.LOWER_CAMEL);
-  private static final Converter<String, String> LOWER_CAMEL_TO_UPPER =
-      CaseFormat.LOWER_CAMEL.converterTo(CaseFormat.UPPER_CAMEL);
+
+  private static final Converter<String, String> UNDERSCORE_TO_CAMEL = CaseFormat.LOWER_UNDERSCORE.converterTo(CaseFormat.LOWER_CAMEL);
+  private static final Converter<String, String> LOWER_CAMEL_TO_UPPER = CaseFormat.LOWER_CAMEL.converterTo(CaseFormat.UPPER_CAMEL);
 
   private final Descriptors.FieldDescriptor fieldDescriptor;
-  private final String convertedFieldName;
-  private Method method = null;
+  private final String javaFieldName;
+
+  private Method getterMethod = null;
 
   ProtoDataFetcher(Descriptors.FieldDescriptor fieldDescriptor) {
     this.fieldDescriptor = fieldDescriptor;
 
     final String fieldName = fieldDescriptor.getName();
-    convertedFieldName =
-        fieldName.contains("_") ? UNDERSCORE_TO_CAMEL.convert(fieldName) : fieldName;
+    javaFieldName = fieldDescriptor.getName().contains("_") ? UNDERSCORE_TO_CAMEL.convert(fieldName) : fieldName;
   }
 
+  @SuppressWarnings("UnstableApiUsage")
   @Override
   public Object get(DataFetchingEnvironment environment) throws Exception {
-
     final Object source = environment.getSource();
     if (source == null) {
       return null;
+    } else if (source instanceof ListenableFuture<?> sourceFuture) {
+      return Futures.transform(sourceFuture, sourceObject -> getInternal(sourceObject, environment.getFieldType()), MoreExecutors.directExecutor());
+    } else {
+      return getInternal(source, environment.getFieldType());
     }
-
-    if (source instanceof Message) {
-      GraphQLType type = environment.getFieldType();
-      if (type instanceof GraphQLEnumType) {
-        return ((Message) source).getField(fieldDescriptor).toString();
-      }
-      if(fieldDescriptor.isRepeated() && fieldDescriptor.getType() == Descriptors.FieldDescriptor.Type.ENUM ){
-        List<Descriptors.EnumValueDescriptor> enumDescriptorList =  (List< Descriptors.EnumValueDescriptor >) ((Message) source).getField(fieldDescriptor);
-        return enumDescriptorList.stream().map(Descriptors.EnumValueDescriptor::toString).collect(Collectors.toList());
-      }
-
-      if(fieldDescriptor.isRepeated() || fieldDescriptor.getType() != Descriptors.FieldDescriptor.Type.MESSAGE || ((Message) source).hasField(fieldDescriptor)){
-        return ((Message) source).getField(fieldDescriptor);
-      } else {
-        return null;
-      }
-    }
-    if (environment.getSource() instanceof Map) {
-      return ((Map<?, ?>) source).get(convertedFieldName);
-    }
-
-    //Futures.transform((ListenableFuture<Message>) source, msg -> msg.getField(fieldDescriptor), MoreExecutors.directExecutor());
-
-    if (method == null) {
-      // no synchronization necessary because this line is idempotent
-      final String methodNameSuffix =
-          fieldDescriptor.isMapField() ? "Map" : fieldDescriptor.isRepeated() ? "List" : "";
-      final String methodName =
-          "get" + LOWER_CAMEL_TO_UPPER.convert(convertedFieldName) + methodNameSuffix;
-      method = source.getClass().getMethod(methodName);
-    }
-    return method.invoke(source);
   }
+
+  private Object getInternal(Object source, GraphQLType fieldType) {
+    if (source instanceof Message sourceMessage) {
+      // enum
+      if (fieldType instanceof GraphQLEnumType) {
+        return sourceMessage.getField(fieldDescriptor).toString();
+      }
+
+      // enum list
+      if (fieldDescriptor.isRepeated() && fieldDescriptor.getType() == Descriptors.FieldDescriptor.Type.ENUM) {
+        List<Descriptors.EnumValueDescriptor> enumDescriptorList = (List<Descriptors.EnumValueDescriptor>) sourceMessage.getField(fieldDescriptor);
+        return enumDescriptorList.stream()
+                .map(Descriptors.EnumValueDescriptor::toString)
+                .collect(Collectors.toList());
+      }
+
+      // lists, primitive values and messages which are contained in the sourceMessage
+      if (fieldDescriptor.isRepeated() || fieldDescriptor.getType() != Descriptors.FieldDescriptor.Type.MESSAGE || sourceMessage.hasField(fieldDescriptor)) {
+        return sourceMessage.getField(fieldDescriptor);
+      }
+
+      return null;
+    }
+
+    if (source instanceof Map<?, ?> sourceMap) {
+      return sourceMap.get(javaFieldName);
+    }
+
+    initGetterMethod(source);
+    try {
+      return getterMethod.invoke(source);
+    } catch (InvocationTargetException | IllegalAccessException e) {
+      throw new RuntimeException("Failed to invoke method '" + getterMethod.getName() + "' on class '" + source.getClass().getSimpleName() + "'.", e);
+    }
+  }
+
+  private void initGetterMethod(Object source) {
+    if (getterMethod == null) {
+      // no synchronization necessary because this line is idempotent
+      final String methodNameSuffix = fieldDescriptor.isMapField() ? "Map" : fieldDescriptor.isRepeated() ? "List" : "";
+      final String methodName = "get" + LOWER_CAMEL_TO_UPPER.convert(javaFieldName) + methodNameSuffix;
+
+      try {
+        getterMethod = source.getClass().getMethod(methodName);
+      } catch (NoSuchMethodException e) {
+        throw new RuntimeException("Method '" + methodName + "' which was expected on protobuf class '" + source.getClass().getSimpleName() + "' does not exist.", e);
+      }
+    }
+  }
+
 }
