@@ -27,7 +27,7 @@ public final class Type {
 
   private Type() {}
 
-  /** Finds a GraphQL type by it's reference name. */
+  /** Finds a GraphQL type by its reference name. */
   public static ModifiableType find(String typeReferenceName) {
     return new ModifiableType(typeReferenceName);
   }

@@ -55,6 +55,10 @@ final class ProtoDataFetcher implements DataFetcher<Object> {
     }
 
     if (source instanceof Message) {
+      if(fieldDescriptor.isOptional() && !((Message) source).hasField(fieldDescriptor)){
+        return null;
+      }
+
       GraphQLType type = environment.getFieldType();
       if (type instanceof GraphQLEnumType) {
         return ((Message) source).getField(fieldDescriptor).toString();
