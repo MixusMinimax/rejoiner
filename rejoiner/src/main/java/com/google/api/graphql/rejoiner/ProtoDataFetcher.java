@@ -64,6 +64,11 @@ final class ProtoDataFetcher implements DataFetcher<Object> {
 
   private Object getInternal(Object source, GraphQLType fieldType) {
     if (source instanceof Message sourceMessage) {
+      // optional
+      if (this.fieldDescriptor.isOptional() && !sourceMessage.hasField(this.fieldDescriptor)) {
+        return null;
+      }
+
       // enum
       if (fieldType instanceof GraphQLEnumType) {
         return sourceMessage.getField(fieldDescriptor).toString();
