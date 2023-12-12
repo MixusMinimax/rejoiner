@@ -39,12 +39,12 @@
     <dependency>
       <groupId>com.google.protobuf</groupId>
       <artifactId>protobuf-java-util</artifactId>
-      <version>3.19.1</version>
+      <version>3.22.2</version>
     </dependency>
     <dependency>
       <groupId>com.google.protobuf</groupId>
       <artifactId>protobuf-java</artifactId>
-      <version>3.19.1</version>
+      <version>3.22.2</version>
     </dependency>
     <dependency>
       <groupId>com.google.api.grpc</groupId>
@@ -62,8 +62,6 @@
           <protocExecutable>/usr/local/bin/protoc</protocExecutable>
           <writeDescriptorSet>true</writeDescriptorSet>
           <descriptorSetFileName>descriptor_set.desc</descriptorSetFileName>
-          <descriptorSetOutputDirectory>${project.build.directory}/test-classes/META-INF/proto
-          </descriptorSetOutputDirectory>
           <includeSourceInfoInDescriptorSet>true</includeSourceInfoInDescriptorSet>
           <includeDependenciesInDescriptorSet>true</includeDependenciesInDescriptorSet>
         </configuration>
@@ -71,7 +69,6 @@
           <execution>
             <goals>
               <goal>compile</goal>
-              <goal>test-compile</goal>
             </goals>
           </execution>
         </executions>
