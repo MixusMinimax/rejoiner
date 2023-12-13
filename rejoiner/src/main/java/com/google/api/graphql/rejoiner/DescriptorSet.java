@@ -30,7 +30,7 @@ public final class DescriptorSet {
   private DescriptorSet() {}
 
   /** Returns a map containing the comments for types and fields. */
-  public static ImmutableMap<String, String> getCommentsFromDescriptorFile(
+  public static Map<String, String> getCommentsFromDescriptorFile(
       InputStream descriptorSetInputStream) {
     try {
       DescriptorProtos.FileDescriptorSet descriptors =
@@ -39,7 +39,7 @@ public final class DescriptorSet {
           .flatMap(
               fileDescriptorProto -> parseDescriptorFile(fileDescriptorProto).entrySet().stream())
           .collect(
-              ImmutableMap.toImmutableMap(
+              Collectors.toUnmodifiableMap(
                   Map.Entry::getKey, Map.Entry::getValue, (value1, value2) -> value1));
     } catch (IOException ignored) {
     }
